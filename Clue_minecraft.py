@@ -29,24 +29,14 @@ historias = {
 ruta = random.choice(rutas)
 
 # --- Introducción ---
-print("🧱 MINECRAFT MISTERIO: ¡El caso del perro de Steve! 🐶")
+print(" MINECRAFT MISTERIO: ¡El caso del perro de Steve! ")
 print("\nSteve ha descubierto que su fiel perro ha sido asesinado...")
-print("Ha llamado a los sospechosos a una reunión para descubrir al culpable.\n")
+print("Ha llamado a los sospechosos a una reunión para descubrir al culpable.")
 time.sleep(2)
 
-#print("Los sospechosos son:")
-#for i, p in enumerate(personajes, 1):
-#    print(f"{i}. {p}")
-#print("\nLas armas posibles son:")
-#for i, a in enumerate(armas, 1):
-#    print(f"{i}. {a}")
-#print("\nLas habitaciones posibles son:")
-#for i, h in enumerate(habitaciones, 1):
-#    print(f"{i}. {h}")
-print("\nTienes 5 oportunidades para hacer preguntas antes de acusar a alguien.\n")
+print("\nTienes 5 oportunidades para hacer preguntas antes de acusar a alguien.")
 
 preguntas = 0
-
 
 # --- Función para mostrar opciones tipo menú ---
 def menu_opciones(lista, texto):
@@ -71,7 +61,7 @@ while preguntas < 5:
     print("3. Persona")
     print("4. Terminar preguntas y acusar")
 
-    eleccion = input("👉 Opción: ")
+    eleccion = input(" Opción: ")
     print()
 
     if eleccion == "1":  # Habitación
@@ -89,7 +79,7 @@ while preguntas < 5:
 
     elif eleccion == "2":  # Arma
         arma = menu_opciones(armas, "revisar un arma")
-        print(f"🪓 Examinas el arma: {arma}")
+        print(f" Examinas el arma: {arma}")
         time.sleep(1.5)
         if arma == ruta["arma"]:
             print("El arma está manchada... parece haber sido usada recientemente.")
@@ -104,7 +94,7 @@ while preguntas < 5:
 
     elif eleccion == "3":  # Persona
         persona = menu_opciones(personajes, "interrogar a alguien")
-        print(f"👤 Hablas con {persona}...")
+        print(f" Hablas con {persona}...")
         time.sleep(1.5)
         nervioso = random.random() < 0.3  # 30% de nerviosismo
         es_asesino = persona == ruta["asesino"]
@@ -123,7 +113,7 @@ while preguntas < 5:
         print("Opción inválida.")
 
 # --- Fase final: acusación ---
-print("\n⚖️ Ha llegado el momento de decidir...")
+print("\n Ha llegado el momento de decidir...")
 asesino = menu_opciones(personajes, "acusar al asesino")
 arma_final = menu_opciones(armas, "elegir el arma del crimen")
 hab_final = menu_opciones(habitaciones, "decidir la habitación del crimen")
@@ -133,14 +123,14 @@ time.sleep(2)
 
 if asesino == ruta["asesino"] and arma_final == ruta["arma"] and hab_final == ruta["habitacion"]:
     print(
-        f"🎉 ¡Correcto! {asesino} usó la {arma_final.lower()} en la {hab_final.lower()} para acabar con el perro de Steve. ¡Has resuelto el caso!")
+        f" ¡Correcto! {asesino} usó la {arma_final.lower()} en la {hab_final.lower()} para acabar con el perro de Steve. ¡Has resuelto el caso!")
 else:
-    print("❌ No lograste resolver el caso.")
+    print(" No lograste resolver el caso.")
     if asesino != ruta["asesino"]:
         print(f"El asesino real era {ruta['asesino']}.")
     if arma_final != ruta["arma"]:
         print(f"El arma usada fue la {ruta['arma'].lower()}.")
     if hab_final != ruta["habitacion"]:
         print(f"El crimen ocurrió en la {ruta['habitacion'].lower()}.")
-    print("\n💀 Steve te mira decepcionado... el asesino escapó.")
+    print("\n Steve te mira decepcionado... el asesino escapó.")
 
