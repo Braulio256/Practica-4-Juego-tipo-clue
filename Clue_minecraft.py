@@ -28,15 +28,26 @@ historias = {
 # Elegir ruta aleatoria
 ruta = random.choice(rutas)
 
-# --- Introducción ---
+# --- Introducción narrativa ---
 print(" MINECRAFT MISTERIO: ¡El caso del perro de Steve! ")
-print("\nSteve ha descubierto que su fiel perro ha sido asesinado...")
-print("Ha llamado a los sospechosos a una reunión para descubrir al culpable.")
 time.sleep(2)
+print("\nSteve regresaba de un largo viaje por el Nether, cargando cofres llenos de recursos.")
+time.sleep(2)
+print("Al llegar a su casa, esperaba ser recibido por su fiel perro... pero el silencio fue su única bienvenida.")
+time.sleep(2)
+print("Sobre la puerta encontró un mensaje hecho con tinta de calamar: 'Tu perro está muerto. No busques al culpable.'")
+time.sleep(3)
+print("\nFurioso y con el corazón roto, Steve llamó a sus amigos más cercanos para una reunión.")
+print("Sospecha que uno de ellos cometió el horrible crimen...")
+time.sleep(3)
 
-print("\nTienes 5 oportunidades para hacer preguntas antes de acusar a alguien.")
+print("\nTienes 5 oportunidades para hacer preguntas antes de acusar a alguien.\n")
 
+# --- Control de nerviosismo ---
+# Garantizamos que al menos una persona esté nerviosa
+nerviosos_fijos = random.sample(personajes, k=1)
 preguntas = 0
+
 
 # --- Función para mostrar opciones tipo menú ---
 def menu_opciones(lista, texto):
@@ -66,45 +77,56 @@ while preguntas < 5:
 
     if eleccion == "1":  # Habitación
         hab = menu_opciones(habitaciones, "investigar una habitación")
-        print(f"🔍 Revisas la {hab}...")
+        print(f" Te diriges a la {hab}...")
         time.sleep(1.5)
-        # Posibilidad de pista real o confusa
-        if random.random() < 0.6 and hab == ruta["habitacion"]:
-            print("Encuentras rastros de pelea... algo ocurrió aquí.")
-        elif random.random() < 0.3:
-            print("Parece que una de las armas fue usada aquí, pero no hay nadie alrededor.")
+
+        prob_bloqueada = 0.2  # 20% no se puede revisar
+        prob_pista = 0.5  # 50% de encontrar algo útil
+        prob_nada = 0.3  # 30% de nada interesante
+
+        if random.random() < prob_bloqueada:
+            print(f"La puerta de la {hab.lower()} está bloqueada... no puedes entrar.")
+        elif hab == ruta["habitacion"] and random.random() < prob_pista:
+            print("Encuentras rastros de pelea... parece que aquí ocurrió algo grave.")
+        elif random.random() < prob_nada:
+            print("Todo parece en calma, solo polvo y telarañas.")
         else:
-            print("Todo parece tranquilo, sin señales del crimen.")
+            print("Notas algo fuera de lugar, pero no estás seguro de qué.")
         preguntas += 1
 
     elif eleccion == "2":  # Arma
         arma = menu_opciones(armas, "revisar un arma")
-        print(f" Examinas el arma: {arma}")
+        print(f" Examinas la {arma.lower()} detenidamente...")
         time.sleep(1.5)
+        prob_sucia_extra = 0.6  # 60% de que aparezca un arma sucia
+
         if arma == ruta["arma"]:
-            print("El arma está manchada... parece haber sido usada recientemente.")
+            print("La superficie está manchada... parece haber sido usada recientemente.")
         else:
-            # Aleatoriamente otra arma puede parecer sospechosa
-            if random.random() < 0.4:
+            if random.random() < prob_sucia_extra:
                 otra_arma = random.choice([a for a in armas if a != arma])
-                print(f"Esta está limpia, pero oyes que la {otra_arma.lower()} parece estar sucia...")
+                print(
+                    f"La {arma.lower()} está limpia, pero escuchas que la {otra_arma.lower()} tiene rastros de suciedad...")
             else:
-                print("El arma parece completamente limpia.")
+                print("El arma luce impecable, sin rastro de uso reciente.")
         preguntas += 1
 
     elif eleccion == "3":  # Persona
         persona = menu_opciones(personajes, "interrogar a alguien")
         print(f" Hablas con {persona}...")
         time.sleep(1.5)
-        nervioso = random.random() < 0.3  # 30% de nerviosismo
+
         es_asesino = persona == ruta["asesino"]
+        nervioso = (persona in nerviosos_fijos) or (random.random() < 0.35)
+
         if nervioso and not es_asesino:
-            print(
-                f"{persona} parece nervioso, responde de manera vaga: 'Yo... no sé nada, estuve ocupado con mis cosas...'")
+            print(f"{persona} está inquieto, evita mirarte: 'Yo... no tengo idea, Steve. Estaba ocupado...'")
         elif nervioso and es_asesino and random.random() < 0.5:
-            print(f"{persona} mantiene la calma, aunque algo en su mirada te hace dudar...")
+            print(f"{persona} parece tranquilo, aunque notas que evita mencionar el perro...")
+        elif es_asesino:
+            print(f"{persona} dice calmadamente: '{historias[persona]}' pero hay algo en su tono que no encaja.")
         else:
-            print(f"{persona} te dice: {historias[persona]}")
+            print(f"{persona} responde: {historias[persona]}")
         preguntas += 1
 
     elif eleccion == "4":
@@ -133,4 +155,3 @@ else:
     if hab_final != ruta["habitacion"]:
         print(f"El crimen ocurrió en la {ruta['habitacion'].lower()}.")
     print("\n Steve te mira decepcionado... el asesino escapó.")
-
