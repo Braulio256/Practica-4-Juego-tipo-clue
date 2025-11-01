@@ -16,40 +16,33 @@ rutas = [
     {"asesino": "Sunny", "arma": "Pico de diamante", "habitacion": "Portal en ruinas"}
 ]
 
-# Historias de los personajes
+# --- CAMBIO #1: Historias de los personajes actualizadas ---
 historias = {
-    "Alex": "Estaba entrenando con sus ovejas cerca del río cuando escuchó la noticia. Dice que no tenía motivos para dañar al perro.",
-    "Kai": "Afirma que estaba reparando su casa tras una explosión de creepers. Nadie lo vio, pero dice que tiene las manos llenas de madera.",
-    "Ari": "Dice que estaba cazando esqueletos para conseguir flechas, aunque no recuerda en qué dirección fue exactamente.",
-    "Noor": "Mencionó que exploraba la pirámide del desierto buscando tesoros. No parece muy afectada por el incidente.",
-    "Sunny": "Comentó que estaba minando diamantes cerca del portal en ruinas. Juró que ni siquiera sabía que el perro de Steve existía."
+    "Alex": "Estaba combatiendo con mobs cerca de la cueva.",
+    "Kai": "Dice que estaba haciendo un hueco para llevar agua a sus cultivos.",
+    "Ari": "Afirma haber estado en la feria probando su puntería.",
+    "Noor": "Estaba en el bosque talando madera para su nueva cabaña.",
+    "Sunny": "Dice que estaba en la mina consiguiendo minerales."
 }
 
-# Elegir ruta aleatoria
-ruta = random.choice(rutas)
+# Elegir ruta aleatoria (La SOLUCIÓN SECRETA)
+ruta_solucion = random.choice(rutas)
 
 # --- Introducción narrativa ---
 print(" MINECRAFT MISTERIO: ¡El caso del perro de Steve! ")
+time.sleep(1)
+print("\nSteve regresaba de un largo viaje por el Nether...")
+print("Al llegar a su casa, encontró un mensaje: 'Tu perro está muerto. No busques al culpable.'")
 time.sleep(2)
-print("\nSteve regresaba de un largo viaje por el Nether, cargando cofres llenos de recursos.")
+print("\nFurioso, Steve llamó a sus amigos. Sospecha que uno de ellos cometió el crimen...")
 time.sleep(2)
-print("Al llegar a su casa, esperaba ser recibido por su fiel perro... pero el silencio fue su única bienvenida.")
-time.sleep(2)
-print("Sobre la puerta encontró un mensaje hecho con tinta de calamar: 'Tu perro está muerto. No busques al culpable.'")
-time.sleep(3)
-print("\nFurioso y con el corazón roto, Steve llamó a sus amigos más cercanos para una reunión.")
-print("Sospecha que uno de ellos cometió el horrible crimen...")
-time.sleep(3)
+print("\nTu objetivo: Usar tus 5 preguntas para DESCARTAR sospechosos, armas y lugares.")
+print("Lleva tus propias notas... ¡La deducción corre por tu cuenta!\n")
 
-print("\nTienes 5 oportunidades para hacer preguntas antes de acusar a alguien.\n")
-
-# --- Control de nerviosismo ---
-# Garantizamos que al menos una persona esté nerviosa
-nerviosos_fijos = random.sample(personajes, k=1)
 preguntas = 0
 
 
-# --- Función para mostrar opciones tipo menú ---
+# --- Función para mostrar opciones tipo menú (sin cambios) ---
 def menu_opciones(lista, texto):
     for i, item in enumerate(lista, 1):
         print(f"{i}. {item}")
@@ -64,9 +57,11 @@ def menu_opciones(lista, texto):
             print("Por favor, elige un número válido.")
 
 
-# --- Bucle de preguntas ---
+# --- CAMBIO #2: Bucle de preguntas con lógica de ELIMINACIÓN DE OBJETOS ---
+# Ya no se menciona el "bloc de notas" ni las "rutas".
 while preguntas < 5:
-    print("\n¿Qué deseas investigar?")
+    print(f"\n--- Preguntas restantes: {5 - preguntas} ---")
+    print("¿Qué deseas investigar?")
     print("1. Habitación")
     print("2. Arma")
     print("3. Persona")
@@ -80,35 +75,29 @@ while preguntas < 5:
         print(f" Te diriges a la {hab}...")
         time.sleep(1.5)
 
-        prob_bloqueada = 0.2  # 20% no se puede revisar
-        prob_pista = 0.5  # 50% de encontrar algo útil
-        prob_nada = 0.3  # 30% de nada interesante
-
-        if random.random() < prob_bloqueada:
-            print(f"La puerta de la {hab.lower()} está bloqueada... no puedes entrar.")
-        elif hab == ruta["habitacion"] and random.random() < prob_pista:
-            print("Encuentras rastros de pelea... parece que aquí ocurrió algo grave.")
-        elif random.random() < prob_nada:
-            print("Todo parece en calma, solo polvo y telarañas.")
+        # Pregunta: ¿La habitación investigada es la de la SOLUCIÓN?
+        if hab == ruta_solucion["habitacion"]:
+            # Pista ambigua (como pediste)
+            print("Encuentras rastros de pelea... parece que aquí ocurrió algo grave. (Pista Sospechosa)")
         else:
-            print("Notas algo fuera de lugar, pero no estás seguro de qué.")
+            # Pista de eliminación (100% segura)
+            print(f"Revisas la {hab.lower()} y está impecable. No hay señales de nada.")
+            print(f"¡Puedes DESCARTAR la {hab} como el lugar del crimen!")
         preguntas += 1
 
     elif eleccion == "2":  # Arma
         arma = menu_opciones(armas, "revisar un arma")
         print(f" Examinas la {arma.lower()} detenidamente...")
         time.sleep(1.5)
-        prob_sucia_extra = 0.6  # 60% de que aparezca un arma sucia
 
-        if arma == ruta["arma"]:
-            print("La superficie está manchada... parece haber sido usada recientemente.")
+        # Pregunta: ¿El arma investigada es la de la SOLUCIÓN?
+        if arma == ruta_solucion["arma"]:
+            # Pista ambigua
+            print(f"La {arma.lower()} está manchada... parece haber sido usada recientemente. (Pista Sospechosa)")
         else:
-            if random.random() < prob_sucia_extra:
-                otra_arma = random.choice([a for a in armas if a != arma])
-                print(
-                    f"La {arma.lower()} está limpia, pero escuchas que la {otra_arma.lower()} tiene rastros de suciedad...")
-            else:
-                print("El arma luce impecable, sin rastro de uso reciente.")
+            # Pista de eliminación (100% segura)
+            print(f"El arma está limpia y guardada bajo llave. Esta arma NO se usó.")
+            print(f"¡Puedes DESCARTAR la {arma} como el arma del crimen!")
         preguntas += 1
 
     elif eleccion == "3":  # Persona
@@ -116,17 +105,15 @@ while preguntas < 5:
         print(f" Hablas con {persona}...")
         time.sleep(1.5)
 
-        es_asesino = persona == ruta["asesino"]
-        nervioso = (persona in nerviosos_fijos) or (random.random() < 0.35)
-
-        if nervioso and not es_asesino:
-            print(f"{persona} está inquieto, evita mirarte: 'Yo... no tengo idea, Steve. Estaba ocupado...'")
-        elif nervioso and es_asesino and random.random() < 0.5:
-            print(f"{persona} parece tranquilo, aunque notas que evita mencionar el perro...")
-        elif es_asesino:
-            print(f"{persona} dice calmadamente: '{historias[persona]}' pero hay algo en su tono que no encaja.")
+        # Pregunta: ¿La persona investigada es la de la SOLUCIÓN?
+        if persona == ruta_solucion["asesino"]:
+            # Pista ambigua
+            print(
+                f"{persona} dice calmadamente: '{historias[persona]}' pero hay algo en su tono que no encaja... (Pista Sospechosa)")
         else:
-            print(f"{persona} responde: {historias[persona]}")
+            # Pista de eliminación (100% segura)
+            print(f"{persona} tiene una coartada perfecta. '{historias[persona]}'. Varios testigos lo confirman.")
+            print(f"¡Puedes DESCARTAR a {persona} como sospechoso!")
         preguntas += 1
 
     elif eleccion == "4":
@@ -134,24 +121,25 @@ while preguntas < 5:
     else:
         print("Opción inválida.")
 
-# --- Fase final: acusación ---
+# --- CAMBIO #3: Fase final: acusación por partes ---
+# El jugador debe elegir cada elemento por separado.
 print("\n Ha llegado el momento de decidir...")
-asesino = menu_opciones(personajes, "acusar al asesino")
+asesino_final = menu_opciones(personajes, "acusar al asesino")
 arma_final = menu_opciones(armas, "elegir el arma del crimen")
 hab_final = menu_opciones(habitaciones, "decidir la habitación del crimen")
 
 print("\nSteve escucha tu veredicto...")
 time.sleep(2)
 
-if asesino == ruta["asesino"] and arma_final == ruta["arma"] and hab_final == ruta["habitacion"]:
+# Se compara la acusación del jugador con la solución secreta
+if asesino_final == ruta_solucion["asesino"] and arma_final == ruta_solucion["arma"] and hab_final == ruta_solucion[
+    "habitacion"]:
     print(
-        f" ¡Correcto! {asesino} usó la {arma_final.lower()} en la {hab_final.lower()} para acabar con el perro de Steve. ¡Has resuelto el caso!")
+        f" ¡Correcto! {asesino_final} usó la {arma_final.lower()} en la {hab_final.lower()} para acabar con el perro de Steve. ¡Has resuelto el caso!")
 else:
     print(" No lograste resolver el caso.")
-    if asesino != ruta["asesino"]:
-        print(f"El asesino real era {ruta['asesino']}.")
-    if arma_final != ruta["arma"]:
-        print(f"El arma usada fue la {ruta['arma'].lower()}.")
-    if hab_final != ruta["habitacion"]:
-        print(f"El crimen ocurrió en la {ruta['habitacion'].lower()}.")
+    # Le decimos al jugador cuál era la respuesta correcta
+    print(f"El asesino real era {ruta_solucion['asesino']}.")
+    print(f"El arma usada fue la {ruta_solucion['arma'].lower()}.")
+    print(f"El crimen ocurrió en la {ruta_solucion['habitacion'].lower()}.")
     print("\n Steve te mira decepcionado... el asesino escapó.")
