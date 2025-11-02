@@ -2,27 +2,25 @@ import pygame
 import sys
 import random
 
-# --- Lógica de tu juego (CAMBIO EN STRINGS) ---
+# --- Lógica de tu juego (Sin cambios) ---
 personajes = ["Alex", "Kai", "Ari", "Noor", "Sunny"]
 armas = ["Espada de madera", "Hacha de oro", "Arco y flecha", "Pico de diamante", "Pala de piedra"]
-habitaciones = ["Herreria de la aldea", "Patio de Steve", "Piramide del desierto", "Mansion del bosque",
+habitaciones = ["Herreria en una aldea", "Patio de Steve", "Piramide del desierto", "Mansion del bosque",
                 "Portal en ruinas"]
 
 rutas = [
     {"asesino": "Alex", "arma": "Espada de madera", "habitacion": "Patio de Steve"},
-    {"asesino": "Kai", "arma": "Pala de piedra", "habitacion": "Herreria de la aldea"},
+    {"asesino": "Kai", "arma": "Pala de piedra", "habitacion": "Herreria en una aldea"},
     {"asesino": "Ari", "arma": "Arco y flecha", "habitacion": "Mansion del bosque"},
     {"asesino": "Noor", "arma": "Hacha de oro", "habitacion": "Piramide del desierto"},
     {"asesino": "Sunny", "arma": "Pico de diamante", "habitacion": "Portal en ruinas"}
 ]
 
-# --- ¡CAMBIO AQUI! ---
-# Se reemplazó 'cabaña' por 'refugio'
 historias = {
     "Alex": "Estaba combatiendo con mobs cerca de la cueva.",
     "Kai": "Dice que estaba haciendo un hueco para llevar agua a sus cultivos.",
-    "Ari": "Afirma haber estado en la feria probando su punteria.",
-    "Noor": "Estaba en el bosque talando madera para su nuevo refugio.",  # <-- ¡CAMBIO!
+    "Ari": "Afirma haber estado en el campo de tiro probando su punteria.",
+    "Noor": "Estaba en el bosque talando madera para su nuevo refugio.",
     "Sunny": "Dice que estaba en la mina consiguiendo minerales."
 }
 
@@ -47,6 +45,7 @@ COLOR_GRIS = (100, 100, 100)
 COLOR_GRIS_CLARO = (150, 150, 150)
 COLOR_TRANSPARENTE = (0, 0, 0, 0)
 
+# Colores de Fallback (si no se encuentran las imágenes)
 COLOR_FONDO_MENU = (20, 20, 40)
 COLOR_FONDO_JUEGO_BASE = (40, 20, 20)
 COLOR_FONDO_FINAL = (20, 40, 20)
@@ -54,17 +53,17 @@ COLOR_FONDO_FINAL = (20, 40, 20)
 # Fuentes
 try:
     fuente_titulo = pygame.font.Font("minecraft_font.ttf", 60)
-    fuente_normal = pygame.font.Font("minecraft_font.ttf", 25)
-    fuente_pequena = pygame.font.Font("minecraft_font.ttf", 18)
+    fuente_normal = pygame.font.Font("minecraft_font.ttf", 28)
+    fuente_pequena = pygame.font.Font("minecraft_font.ttf", 22)
 except FileNotFoundError:
     fuente_titulo = pygame.font.Font(None, 74)
     fuente_normal = pygame.font.Font(None, 32)
     fuente_pequena = pygame.font.Font(None, 24)
 
-# --- 3. Diccionario de Colores de Escena ---
+# --- 3. Diccionario de Colores de Escena (Fallback) ---
 colores_fondo_escena = {
     "base": COLOR_FONDO_JUEGO_BASE,
-    "Herreria de la aldea": (160, 80, 0),
+    "Herreria en una aldea": (160, 80, 0),
     "Patio de Steve": (0, 100, 20),
     "Piramide del desierto": (210, 200, 100),
     "Mansion del bosque": (30, 60, 30),
@@ -72,14 +71,74 @@ colores_fondo_escena = {
 }
 color_escena_actual = colores_fondo_escena["base"]
 
-# --- 4. Áreas de la Interfaz ---
+# --- ### CAMBIO: Carga de Imágenes ### ---
+usar_colores_fallback = False
+try:
+    # Función para sanitizar nombres de archivo (reemplaza espacios y acentos)
+    def sanitizar_nombre(nombre):
+        return nombre.lower().replace(" ", "_").replace("á", "a").replace("é", "e").replace("í", "i").replace("ó",
+                                                                                                              "o").replace(
+            "ú", "u")
+
+
+    # Cargar fondos principales
+    fondo_menu = pygame.image.load("fondo_menu.png").convert()
+    fondo_intro = pygame.image.load("fondo_intro.png").convert()
+    fondo_juego_base = pygame.image.load("fondo_juego_base.png").convert()
+    fondo_ganaste = pygame.image.load("fondo_ganaste.png").convert()
+    fondo_perdiste = pygame.image.load("fondo_perdiste.png").convert()
+
+    # Escalar fondos principales
+    fondo_menu = pygame.transform.scale(fondo_menu, (ANCHO, ALTO))
+    fondo_intro = pygame.transform.scale(fondo_intro, (ANCHO, ALTO))
+    fondo_juego_base = pygame.transform.scale(fondo_juego_base, (ANCHO, ALTO))
+    fondo_ganaste = pygame.transform.scale(fondo_ganaste, (ANCHO, ALTO))
+    fondo_perdiste = pygame.transform.scale(fondo_perdiste, (ANCHO, ALTO))
+
+    # Cargar diccionarios de imágenes
+    imagenes_personajes = {}
+    for p in personajes:
+        nombre_archivo = f"{sanitizar_nombre(p)}.png"
+        img = pygame.image.load(nombre_archivo).convert_alpha()  # Usar alpha por si tienen transparencia
+        imagenes_personajes[p] = pygame.transform.scale(img, (ANCHO, ALTO))
+
+    imagenes_armas = {}
+    imagenes_armas_culpables = {}
+    for a in armas:
+        # Arma normal
+        nombre_archivo = f"{sanitizar_nombre(a)}.png"
+        img = pygame.image.load(nombre_archivo).convert_alpha()
+        imagenes_armas[a] = pygame.transform.scale(img, (ANCHO, ALTO))
+
+        # Arma culpable
+        nombre_archivo_culpable = f"{sanitizar_nombre(a)}_culpable.png"
+        img_culpable = pygame.image.load(nombre_archivo_culpable).convert_alpha()
+        imagenes_armas_culpables[a] = pygame.transform.scale(img_culpable, (ANCHO, ALTO))
+
+    imagenes_locaciones = {}
+    for l in habitaciones:
+        nombre_archivo = f"{sanitizar_nombre(l)}.png"
+        img = pygame.image.load(nombre_archivo).convert()  # No necesitan alpha
+        imagenes_locaciones[l] = pygame.transform.scale(img, (ANCHO, ALTO))
+
+    # Variable para la imagen actual
+    imagen_escena_actual = fondo_intro
+
+except FileNotFoundError as e:
+    print(f"¡ADVERTENCIA! No se pudo cargar una imagen: {e}")
+    print("Se usaran los fondos de color solido en su lugar.")
+    usar_colores_fallback = True
+# --- ### FIN CAMBIO ### ---
+
+
+# --- 4. Áreas de la Interfaz (Sin cambios) ---
 OPCIONES_ANCHO = 300
 TEXTO_ALTO = 200
 panel_opciones_rect = pygame.Rect(ANCHO - OPCIONES_ANCHO, 0, OPCIONES_ANCHO, ALTO)
 caja_texto_rect = pygame.Rect(20, ALTO - TEXTO_ALTO - 20, ANCHO - 40, TEXTO_ALTO)
 
 
-# --- 5. Funciones de Ayuda para Dibujar ---
+# --- 5. Funciones de Ayuda para Dibujar (Sin cambios) ---
 def dibujar_texto(texto, fuente, color, superficie, x, y, centrado=False, x_max=None):
     textobj = fuente.render(texto, True, color)
     textrect = textobj.get_rect()
@@ -120,22 +179,27 @@ botones_actuales = []
 acusacion_final = {}
 
 
-# Función para (re)iniciar el juego
+# --- ### CAMBIO: Lógica de imágenes en `iniciar_nuevo_juego` ### ---
 def iniciar_nuevo_juego():
-    global ruta_solucion, preguntas, resultado_final, sub_estado_juego, texto_narrativo, acusacion_final, color_escena_actual
+    global ruta_solucion, preguntas, resultado_final, sub_estado_juego, texto_narrativo, acusacion_final, color_escena_actual, imagen_escena_actual
     ruta_solucion = random.choice(rutas)
     preguntas = 0
     resultado_final = ""
     sub_estado_juego = "introduccion"
     texto_narrativo = "Steve regresaba de un largo viaje por el Nether... Al llegar a su casa, encontro un mensaje: 'Tu perro esta muerto. No busques al culpable.'"
     acusacion_final = {"asesino": None, "arma": None, "habitacion": None}
-    color_escena_actual = colores_fondo_escena["base"]
+
+    if usar_colores_fallback:
+        color_escena_actual = colores_fondo_escena["base"]
+    else:
+        imagen_escena_actual = fondo_intro  # Empezamos con la intro
+
     # print(f"SOLUCION (Debug): {ruta_solucion}")
 
 
-# Función de lógica de investigación (CORREGIDA)
+# --- ### CAMBIO: Lógica de imágenes en `investigar_item` ### ---
 def investigar_item(item_nombre, tipo):
-    global texto_narrativo, color_escena_actual
+    global texto_narrativo, color_escena_actual, imagen_escena_actual
 
     clave_solucion = tipo
     if tipo == "persona":
@@ -143,24 +207,37 @@ def investigar_item(item_nombre, tipo):
     elif tipo == "habitacion":
         clave_solucion = "habitacion"
 
-    if tipo == "habitacion":
-        if item_nombre in colores_fondo_escena:
-            color_escena_actual = colores_fondo_escena[item_nombre]
-        else:
-            color_escena_actual = colores_fondo_escena["base"]
+        # --- Lógica de cambio de imagen/color ---
+    if usar_colores_fallback:
+        if tipo == "habitacion":
+            color_escena_actual = colores_fondo_escena.get(item_nombre, colores_fondo_escena["base"])
+    else:
+        # Actualizar la imagen de fondo según el tipo
+        if tipo == "habitacion":
+            imagen_escena_actual = imagenes_locaciones.get(item_nombre, fondo_juego_base)
+        elif tipo == "persona":
+            imagen_escena_actual = imagenes_personajes.get(item_nombre, fondo_juego_base)
+        elif tipo == "arma":
+            # Mostrar imagen "culpable" o "normal"
+            if item_nombre == ruta_solucion[clave_solucion]:
+                imagen_escena_actual = imagenes_armas_culpables.get(item_nombre, fondo_juego_base)
+            else:
+                imagen_escena_actual = imagenes_armas.get(item_nombre, fondo_juego_base)
+    # --- Fin lógica de cambio ---
 
+    # --- Lógica de texto (sin cambios) ---
     if item_nombre == ruta_solucion[clave_solucion]:
         if tipo == "persona":
             texto_narrativo = f"{item_nombre} dice: '{historias[item_nombre]}' Su voz tiembla un poco, pero no puedes estar seguro... (Pista Sospechosa)"
         elif tipo == "arma":
-            texto_narrativo = f"Examinas el/la {item_nombre.lower()}. Esta... ¿manchada? Parece que se ha usado recientemente. (Pista Sospechosa)"
+            texto_narrativo = f"Examinas la {item_nombre.lower()}. Esta... ¿manchada? Parece que se ha usado recientemente. (Pista Sospechosa)"
         elif tipo == "habitacion":
-            texto_narrativo = f"Inspeccionas el/la {item_nombre.lower()}. Hay claros signos de forcejeo y algunos... ¿pelos de perro? (Pista Sospechosa)"
+            texto_narrativo = f"Inspeccionas la {item_nombre.lower()}. Hay claros signos de forcejeo y algunos... ¿pelos de perro? (Pista Sospechosa)"
     else:
         if tipo == "persona":
             texto_narrativo = f"{item_nombre} tiene una coartada perfecta. '{historias[item_nombre]}'. Varios testigos lo confirman. ¡Puedes DESCARTAR a {item_nombre}!"
         elif tipo == "arma":
-            texto_narrativo = f"El/La {item_nombre.lower()} esta guardada y cubierta de polvo. Es imposible que se usara. ¡Puedes DESCARTAR esta arma!"
+            texto_narrativo = f"La {item_nombre.lower()} esta guardada y cubierta de polvo. Es imposible que se usara. ¡Puedes DESCARTAR esta arma!"
         elif tipo == "habitacion":
             texto_narrativo = f"El lugar esta tranquilo, no hay ni una mota de polvo fuera de lugar. El crimen NO ocurrio aqui. ¡Puedes DESCARTAR la {item_nombre}!"
 
@@ -171,7 +248,7 @@ while running:
 
     mouse_pos = pygame.mouse.get_pos()
 
-    # --- Lógica de Botones Movida ARRIBA ---
+    # --- Lógica de Botones Movida ARRIBA (Sin cambios) ---
     botones_actuales.clear()
 
     if estado_juego == "jugando" or estado_juego == "acusando":
@@ -204,7 +281,6 @@ while running:
             elif sub_estado_juego == "acusando_habitacion":
                 lista_opciones_actual = habitaciones
 
-        # Calcular los rects de los botones y guardarlos
         for texto_opcion in lista_opciones_actual:
             if texto_opcion == "---":
                 y_offset += 20
@@ -214,7 +290,7 @@ while running:
             botones_actuales.append((texto_opcion, boton_rect))
             y_offset += 50
 
-            # --- 7.1. Manejo de Eventos ---
+            # --- 7.1. Manejo de Eventos (CAMBIOS para resetear imagen) ---
     eventos = pygame.event.get()
     for evento in eventos:
         if evento.type == pygame.QUIT:
@@ -238,6 +314,11 @@ while running:
                                     if texto_opcion == "Continuar":
                                         sub_estado_juego = "eligiendo_categoria"
                                         texto_narrativo = f"Steve te reune. Tienes {5 - preguntas} oportunidades para investigar. ¿Por donde empiezas?"
+                                        # CAMBIO: Resetear a imagen base
+                                        if not usar_colores_fallback:
+                                            imagen_escena_actual = fondo_juego_base
+                                        else:
+                                            color_escena_actual = colores_fondo_escena["base"]
 
                                 elif sub_estado_juego == "eligiendo_categoria":
                                     if texto_opcion == "Investigar Persona":
@@ -256,9 +337,12 @@ while running:
                                     if texto_opcion == "Volver":
                                         sub_estado_juego = "eligiendo_categoria"
                                         texto_narrativo = f"¿Que deseas investigar ahora? (Preguntas restantes: {5 - preguntas})"
-                                        color_escena_actual = colores_fondo_escena["base"]
+                                        # CAMBIO: Resetear a imagen base
+                                        if not usar_colores_fallback:
+                                            imagen_escena_actual = fondo_juego_base
+                                        else:
+                                            color_escena_actual = colores_fondo_escena["base"]
                                     else:
-                                        # Aquí determinamos el 'tipo' para la función investigar_item
                                         if sub_estado_juego == "eligiendo_persona":
                                             tipo_investigacion = "persona"
                                         elif sub_estado_juego == "eligiendo_arma":
@@ -272,7 +356,12 @@ while running:
                                 elif sub_estado_juego == "mostrando_pista":
                                     if texto_opcion == "Continuar":
                                         preguntas += 1
-                                        color_escena_actual = colores_fondo_escena["base"]
+                                        # CAMBIO: Resetear a imagen base
+                                        if not usar_colores_fallback:
+                                            imagen_escena_actual = fondo_juego_base
+                                        else:
+                                            color_escena_actual = colores_fondo_escena["base"]
+
                                         if preguntas >= 5:
                                             estado_juego = "acusando"
                                             sub_estado_juego = "acusando_persona"
@@ -312,11 +401,16 @@ while running:
                     elif 'boton_salir_rect' in locals() and boton_salir_rect.collidepoint(mouse_pos):
                         running = False
 
-    # --- 7.2. Lógica y Dibujo basado en el Estado ---
+    # --- 7.2. Lógica y Dibujo (CAMBIOS para blit/fill) ---
 
     # --- PANTALLA: Menú Principal ---
     if estado_juego == "menu_principal":
-        pantalla.fill(COLOR_FONDO_MENU)
+        # CAMBIO: Dibujar imagen o color
+        if usar_colores_fallback:
+            pantalla.fill(COLOR_FONDO_MENU)
+        else:
+            pantalla.blit(fondo_menu, (0, 0))
+
         dibujar_texto("Minecraft Misterio", fuente_titulo, COLOR_BLANCO, pantalla, ANCHO // 2, 150, centrado=True)
 
         boton_jugar_rect = pygame.draw.rect(pantalla, COLOR_GRIS, [ANCHO // 2 - 100, 300, 200, 50])
@@ -333,8 +427,13 @@ while running:
     # --- PANTALLA: Jugando o Acusando ---
     elif estado_juego == "jugando" or estado_juego == "acusando":
 
-        pantalla.fill(color_escena_actual)
+        # CAMBIO: Dibujar imagen o color
+        if usar_colores_fallback:
+            pantalla.fill(color_escena_actual)
+        else:
+            pantalla.blit(imagen_escena_actual, (0, 0))
 
+        # Dibujar UI (paneles transparentes, sin cambios)
         panel_opciones_surf = pygame.Surface((OPCIONES_ANCHO, ALTO), pygame.SRCALPHA)
         panel_opciones_surf.fill((0, 0, 0, 180))
         pantalla.blit(panel_opciones_surf, (ANCHO - OPCIONES_ANCHO, 0))
@@ -346,7 +445,7 @@ while running:
 
         dibujar_texto_envoltura(texto_narrativo, fuente_normal, COLOR_BLANCO, pantalla, caja_texto_rect)
 
-        # Dibujar los botones
+        # Dibujar los botones (sin cambios)
         for (texto_opcion, boton_rect) in botones_actuales:
             color_boton = COLOR_GRIS
             if boton_rect.collidepoint(mouse_pos):
@@ -360,8 +459,16 @@ while running:
     # --- PANTALLA: Final ---
     elif estado_juego == "pantalla_final":
 
-        pantalla.fill(COLOR_FONDO_FINAL)
+        # CAMBIO: Dibujar imagen de ganar/perder o color
+        if usar_colores_fallback:
+            pantalla.fill(COLOR_FONDO_FINAL)
+        else:
+            if resultado_final == "Ganaste":
+                pantalla.blit(fondo_ganaste, (0, 0))
+            else:
+                pantalla.blit(fondo_perdiste, (0, 0))
 
+        # Dibujar texto de resultado
         if resultado_final == "Ganaste":
             dibujar_texto("¡Has resuelto el caso!", fuente_titulo, COLOR_BLANCO, pantalla, ANCHO // 2, 150,
                           centrado=True)
@@ -376,12 +483,11 @@ while running:
             dibujar_texto(sol_texto_1, fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 250, centrado=True)
             dibujar_texto(sol_texto_2, fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 290, centrado=True)
 
-        # Definimos los TRES rects
+        # Dibujar botones (sin cambios)
         boton_jugar_de_nuevo_rect = pygame.draw.rect(pantalla, COLOR_GRIS, [ANCHO // 2 - 100, 350, 200, 50])
         boton_menu_principal_rect = pygame.draw.rect(pantalla, COLOR_GRIS, [ANCHO // 2 - 100, 450, 200, 50])
         boton_salir_rect = pygame.draw.rect(pantalla, COLOR_GRIS, [ANCHO // 2 - 100, 550, 200, 50])
 
-        # Efectos hover
         if boton_jugar_de_nuevo_rect.collidepoint(mouse_pos):
             pygame.draw.rect(pantalla, COLOR_GRIS_CLARO, boton_jugar_de_nuevo_rect)
         if boton_menu_principal_rect.collidepoint(mouse_pos):
@@ -389,7 +495,6 @@ while running:
         if boton_salir_rect.collidepoint(mouse_pos):
             pygame.draw.rect(pantalla, COLOR_GRIS_CLARO, boton_salir_rect)
 
-        # Textos de los botones
         dibujar_texto("Jugar de Nuevo", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 375, centrado=True)
         dibujar_texto("Menu Principal", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 475, centrado=True)
         dibujar_texto("Salir", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 575, centrado=True)
