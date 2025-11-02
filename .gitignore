@@ -1,0 +1,33 @@
+# Ignorar directorios de IDE (PyCharm, VSCode, etc.)
+.idea/
+.vscode/
+
+# Ignorar directorios de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar entornos virtuales
+venv/
+.venv/
+env/
+.env
+
+# --- Tus Peticiones ---
+
+# Ignorar archivos de fuentes (tipografia)
+*.ttf
+*.otf
+
+# Ignorar archivos de imagen
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+
+# Ignorar archivos del sistema operativo
+.DS_Store
+Thumbs.db
