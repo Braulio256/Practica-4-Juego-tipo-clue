@@ -1,6 +1,22 @@
 import pygame
 import sys
 import random
+import os
+
+
+# --- ### Función Resource Path ### ---
+def resource_path(relative_path):
+    """ Obtiene la ruta absoluta al recurso, funciona para desarrollo y para PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+# --- ### FIN FUNCION ### ---
+
 
 # --- Lógica de tu juego ---
 personajes = ["Alex", "Kai", "Ari", "Noor", "Sunny"]
@@ -59,10 +75,12 @@ COLOR_FONDO_JUEGO_BASE = (40, 20, 20)
 COLOR_FONDO_FINAL = (20, 40, 20)
 
 try:
-    fuente_titulo = pygame.font.Font("minecraft_font.ttf", 60)
-    fuente_normal = pygame.font.Font("minecraft_font.ttf", 28)
-    fuente_pequena = pygame.font.Font("minecraft_font.ttf", 22)
+    ruta_fuente = resource_path("assets/minecraft_font.ttf")
+    fuente_titulo = pygame.font.Font(ruta_fuente, 60)
+    fuente_normal = pygame.font.Font(ruta_fuente, 28)
+    fuente_pequena = pygame.font.Font(ruta_fuente, 22)
 except FileNotFoundError:
+    print("ADVERTENCIA: Fuente no encontrada en 'assets/'. Usando fuente por defecto.")
     fuente_titulo = pygame.font.Font(None, 74)
     fuente_normal = pygame.font.Font(None, 32)
     fuente_pequena = pygame.font.Font(None, 24)
@@ -85,41 +103,48 @@ try:
             "ú", "u")
 
 
-    fondo_menu = pygame.transform.scale(pygame.image.load("fondo_menu.png").convert(), (ANCHO, ALTO))
-    fondo_intro = pygame.transform.scale(pygame.image.load("fondo_intro.png").convert(), (ANCHO, ALTO))
-    fondo_juego_base = pygame.transform.scale(pygame.image.load("fondo_juego_base.png").convert(), (ANCHO, ALTO))
-    fondo_ganaste = pygame.transform.scale(pygame.image.load("fondo_ganaste.png").convert(), (ANCHO, ALTO))
-    fondo_perdiste = pygame.transform.scale(pygame.image.load("fondo_perdiste.png").convert(), (ANCHO, ALTO))
+    fondo_menu = pygame.image.load(resource_path("assets/fondo_menu.png")).convert()
+    fondo_intro = pygame.image.load(resource_path("assets/fondo_intro.png")).convert()
+    fondo_juego_base = pygame.image.load(resource_path("assets/fondo_juego_base.png")).convert()
+    fondo_ganaste = pygame.image.load(resource_path("assets/fondo_ganaste.png")).convert()
+    fondo_perdiste = pygame.image.load(resource_path("assets/fondo_perdiste.png")).convert()
+
+    fondo_menu = pygame.transform.scale(fondo_menu, (ANCHO, ALTO))
+    fondo_intro = pygame.transform.scale(fondo_intro, (ANCHO, ALTO))
+    fondo_juego_base = pygame.transform.scale(fondo_juego_base, (ANCHO, ALTO))
+    fondo_ganaste = pygame.transform.scale(fondo_ganaste, (ANCHO, ALTO))
+    fondo_perdiste = pygame.transform.scale(fondo_perdiste, (ANCHO, ALTO))
 
     imagenes_personajes = {
-        p: pygame.transform.scale(pygame.image.load(f"{sanitizar_nombre(p)}.png").convert_alpha(), (ANCHO, ALTO)) for p
-        in personajes}
+        p: pygame.transform.scale(pygame.image.load(resource_path(f"assets/{sanitizar_nombre(p)}.png")).convert_alpha(),
+                                  (ANCHO, ALTO)) for p in personajes}
     imagenes_armas = {
-        a: pygame.transform.scale(pygame.image.load(f"{sanitizar_nombre(a)}.png").convert_alpha(), (ANCHO, ALTO)) for a
-        in armas}
-    imagenes_armas_culpables = {
-        a: pygame.transform.scale(pygame.image.load(f"{sanitizar_nombre(a)}_culpable.png").convert_alpha(),
+        a: pygame.transform.scale(pygame.image.load(resource_path(f"assets/{sanitizar_nombre(a)}.png")).convert_alpha(),
                                   (ANCHO, ALTO)) for a in armas}
+    imagenes_armas_culpables = {a: pygame.transform.scale(
+        pygame.image.load(resource_path(f"assets/{sanitizar_nombre(a)}_culpable.png")).convert_alpha(), (ANCHO, ALTO))
+                                for a in armas}
     imagenes_locaciones = {
-        l: pygame.transform.scale(pygame.image.load(f"{sanitizar_nombre(l)}.png").convert(), (ANCHO, ALTO)) for l in
-        habitaciones}
+        l: pygame.transform.scale(pygame.image.load(resource_path(f"assets/{sanitizar_nombre(l)}.png")).convert(),
+                                  (ANCHO, ALTO)) for l in habitaciones}
 
     imagen_escena_actual = fondo_intro
 except FileNotFoundError as e:
     print(f"¡ADVERTENCIA! No se pudo cargar una imagen: {e}")
+    print("Asegurate de que todos los archivos esten en la carpeta 'assets'.")
     print("Se usaran los fondos de color solido en su lugar.")
     usar_colores_fallback = True
 # --- FIN Carga de Imágenes ---
 
 
 # --- 5. Áreas de la Interfaz ---
-OPCIONES_ANCHO = 325
+OPCIONES_ANCHO = 320
 TEXTO_ALTO = 200
 panel_opciones_rect = pygame.Rect(ANCHO - OPCIONES_ANCHO, 0, OPCIONES_ANCHO, ALTO)
 caja_texto_rect = pygame.Rect(20, ALTO - TEXTO_ALTO - 20, ANCHO - 40, TEXTO_ALTO)
 
 
-# --- 6. Funciones de Ayuda para Dibujar (CORREGIDA) ---
+# --- 6. Funciones de Ayuda para Dibujar ---
 def dibujar_texto(texto, fuente, color, superficie, x, y, centrado=False, x_max=None):
     textobj = fuente.render(texto, True, color)
     textrect = textobj.get_rect()
@@ -251,9 +276,8 @@ while running:
     if estado_juego == "jugando" or estado_juego == "acusando":
         y_offset = 50
         x_botones = ANCHO - (OPCIONES_ANCHO // 2)
-        # --- ### ¡CAMBIO AQUI! ### ---
-        ancho_botones = OPCIONES_ANCHO - 10  # De 20 a 10 (mas ancho)
-        # --- ### FIN CAMBIO ### ---
+        ancho_botones = OPCIONES_ANCHO - 10
+
         lista_opciones_actual = []
 
         if estado_juego == "jugando":
@@ -363,7 +387,7 @@ while running:
                                                 texto_narrativo = "Se acabaron tus preguntas. Debes hacer una acusacion. ¿Quien es el ASESINO?"
                                             else:
                                                 sub_estado_juego = "eligiendo_categoria"
-                                                texto_narrativo = f"¿Que deseas investigar ahora? (Pregtas restantes: {5 - preguntas})"
+                                                texto_narrativo = f"¿Que deseas investigar ahora? (Preguntas restantes: {5 - preguntas})"
                                             indice_texto = 0
                                 elif estado_juego == "acusando":
                                     if sub_estado_juego == "acusando_persona":
@@ -399,7 +423,7 @@ while running:
 
     # --- 8.2. Lógica y Dibujo ---
 
-    # --- PANTALLA: Menú Principal (BOTONES ANCHOS) ---
+    # --- PANTALLA: Menú Principal ---
     if estado_juego == "menu_principal":
         if usar_colores_fallback:
             pantalla.fill(COLOR_FONDO_MENU)
@@ -435,7 +459,7 @@ while running:
         dibujar_texto("Salir", fuente_normal, COLOR_BLANCO, pantalla, boton_salir_rect.centerx,
                       boton_salir_rect.centery, centrado=True)
 
-    # --- PANTALLA: Jugando o Acusando (SIN PANEL) ---
+    # --- PANTALLA: Jugando o Acusando ---
     elif estado_juego == "jugando" or estado_juego == "acusando":
 
         if usar_colores_fallback:
@@ -457,15 +481,11 @@ while running:
                     color_boton = COLOR_GRIS_CLARO
 
                 pygame.draw.rect(pantalla, color_boton, boton_rect, border_radius=5)
-                # --- ### ¡CAMBIO AQUI! ### ---
-                # Ahora que los botones son mas anchos, el texto deberia caber.
-                # He quitado el x_max que causaba el error original,
-                # pero la funcion dibujar_texto ya esta corregida.
                 dibujar_texto(texto_opcion, fuente_pequena, COLOR_BLANCO, pantalla,
                               boton_rect.centerx, boton_rect.centery,
                               centrado=True)
 
-                # --- PANTALLA: Final (BOTONES ANCHOS) ---
+                # --- ### PANTALLA FINAL ACTUALIZADA ### ---
     elif estado_juego == "pantalla_final":
 
         if usar_colores_fallback:
@@ -476,44 +496,97 @@ while running:
             else:
                 pantalla.blit(fondo_perdiste, (0, 0))
 
-        articulo_arma_sol = articulos_armas[ruta_solucion['arma']]
-        articulo_hab_sol = articulos_habitaciones[ruta_solucion['habitacion']]
-
         if resultado_final == "Ganaste":
             dibujar_texto("¡Has resuelto el caso!", fuente_titulo, COLOR_BLANCO, pantalla, ANCHO // 2, 150,
                           centrado=True)
+
+            articulo_arma_sol = articulos_armas[ruta_solucion['arma']]
+            articulo_hab_sol = articulos_habitaciones[ruta_solucion['habitacion']]
             sol_texto_1 = f"¡Era {ruta_solucion['asesino']} con {articulo_arma_sol} {ruta_solucion['arma'].lower()}"
             sol_texto_2 = f"en {articulo_hab_sol} {ruta_solucion['habitacion'].lower()}!"
             dibujar_texto(sol_texto_1, fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 250, centrado=True)
             dibujar_texto(sol_texto_2, fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 290, centrado=True)
+
         else:
             dibujar_texto("¡El asesino escapo!", fuente_titulo, COLOR_BLANCO, pantalla, ANCHO // 2, 150, centrado=True)
-            sol_texto_1 = f"La respuesta correcta era: {ruta_solucion['asesino']}"
-            sol_texto_2 = f"con {articulo_arma_sol} {ruta_solucion['arma'].lower()} en {articulo_hab_sol} {ruta_solucion['habitacion'].lower()}."
-            dibujar_texto(sol_texto_1, fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 250, centrado=True)
-            dibujar_texto(sol_texto_2, fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 290, centrado=True)
+            dibujar_texto("Steve te mira decepcionado...", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 200,
+                          centrado=True)
 
+            # Logica de feedback
+            if acusacion_final["asesino"] == ruta_solucion["asesino"]:
+                texto_asesino = "Asesino: Correcto"
+            else:
+                texto_asesino = "Asesino: Incorrecto"
+
+            if acusacion_final["arma"] == ruta_solucion["arma"]:
+                texto_arma = "Arma: Correcto"
+            else:
+                texto_arma = "Arma: Incorrecto"
+
+            if acusacion_final["habitacion"] == ruta_solucion["habitacion"]:
+                texto_habitacion = "Habitacion: Correcto"
+            else:
+                texto_habitacion = "Habitacion: Incorrecto"
+
+            # --- ### CAMBIO: Dibujar el feedback horizontalmente ### ---
+            y_feedback = 250  # Misma altura para todos
+
+            # Posicion X 1 (1/4 de la pantalla)
+            x_asesino = ANCHO // 5
+            dibujar_texto(texto_asesino, fuente_normal, COLOR_BLANCO, pantalla, x_asesino, y_feedback, centrado=True)
+
+            # Posicion X 2 (Centro de la pantalla)
+            x_arma = ANCHO // 2
+            dibujar_texto(texto_arma, fuente_normal, COLOR_BLANCO, pantalla, x_arma, y_feedback, centrado=True)
+
+            # Posicion X 3 (3/4 de la pantalla)
+            x_habitacion = (ANCHO // 5) * 4
+            dibujar_texto(texto_habitacion, fuente_normal, COLOR_BLANCO, pantalla, x_habitacion, y_feedback,
+                          centrado=True)
+            # --- ### FIN CAMBIO ### ---
+
+        # --- Logica de 3 botones horizontales ---
         boton_ancho_final = 300
-        boton_jugar_de_nuevo_rect = pygame.draw.rect(pantalla, COLOR_GRIS,
-                                                     [ANCHO // 2 - (boton_ancho_final // 2), 350, boton_ancho_final,
-                                                      50], border_radius=10)
-        boton_menu_principal_rect = pygame.draw.rect(pantalla, COLOR_GRIS,
-                                                     [ANCHO // 2 - (boton_ancho_final // 2), 450, boton_ancho_final,
-                                                      50], border_radius=10)
-        boton_salir_rect = pygame.draw.rect(pantalla, COLOR_GRIS,
-                                            [ANCHO // 2 - (boton_ancho_final // 2), 550, boton_ancho_final, 50],
-                                            border_radius=10)
+        boton_alto_final = 50
+        boton_espacio_final = 40
 
-        if boton_jugar_de_nuevo_rect.collidepoint(mouse_pos):
-            pygame.draw.rect(pantalla, COLOR_GRIS_CLARO, boton_jugar_de_nuevo_rect, border_radius=10)
-        if boton_menu_principal_rect.collidepoint(mouse_pos):
-            pygame.draw.rect(pantalla, COLOR_GRIS_CLARO, boton_menu_principal_rect, border_radius=10)
-        if boton_salir_rect.collidepoint(mouse_pos):
-            pygame.draw.rect(pantalla, COLOR_GRIS_CLARO, boton_salir_rect, border_radius=10)
+        # Ajustar la altura de los botones
+        if resultado_final == "Ganaste":
+            boton_y_final = 600
+        else:
+            # Mas abajo para dejar espacio al texto de feedback
+            boton_y_final = 600
 
-        dibujar_texto("Jugar de Nuevo", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 375, centrado=True)
-        dibujar_texto("Menu Principal", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 475, centrado=True)
-        dibujar_texto("Salir", fuente_normal, COLOR_BLANCO, pantalla, ANCHO // 2, 575, centrado=True)
+        total_ancho_final = (boton_ancho_final * 3) + (boton_espacio_final * 2)
+        inicio_x_final = (ANCHO - total_ancho_final) // 2
+
+        boton_jdn_x = inicio_x_final
+        boton_mp_x = inicio_x_final + boton_ancho_final + boton_espacio_final
+        boton_s_x = inicio_x_final + (boton_ancho_final * 2) + (boton_espacio_final * 2)
+
+        boton_jugar_de_nuevo_rect = pygame.Rect(boton_jdn_x, boton_y_final, boton_ancho_final, boton_alto_final)
+        boton_menu_principal_rect = pygame.Rect(boton_mp_x, boton_y_final, boton_ancho_final, boton_alto_final)
+        boton_salir_rect = pygame.Rect(boton_s_x, boton_y_final, boton_ancho_final, boton_alto_final)
+
+        color_jdn = COLOR_GRIS
+        if boton_jugar_de_nuevo_rect.collidepoint(mouse_pos): color_jdn = COLOR_GRIS_CLARO
+        pygame.draw.rect(pantalla, color_jdn, boton_jugar_de_nuevo_rect, border_radius=10)
+
+        color_mp = COLOR_GRIS
+        if boton_menu_principal_rect.collidepoint(mouse_pos): color_mp = COLOR_GRIS_CLARO
+        pygame.draw.rect(pantalla, color_mp, boton_menu_principal_rect, border_radius=10)
+
+        color_s = COLOR_GRIS
+        if boton_salir_rect.collidepoint(mouse_pos): color_s = COLOR_GRIS_CLARO
+        pygame.draw.rect(pantalla, color_s, boton_salir_rect, border_radius=10)
+
+        dibujar_texto("Jugar de Nuevo", fuente_normal, COLOR_BLANCO, pantalla, boton_jugar_de_nuevo_rect.centerx,
+                      boton_jugar_de_nuevo_rect.centery, centrado=True)
+        dibujar_texto("Menu Principal", fuente_normal, COLOR_BLANCO, pantalla, boton_menu_principal_rect.centerx,
+                      boton_menu_principal_rect.centery, centrado=True)
+        dibujar_texto("Salir", fuente_normal, COLOR_BLANCO, pantalla, boton_salir_rect.centerx,
+                      boton_salir_rect.centery, centrado=True)
+    # --- ### FIN PANTALLA FINAL ACTUALIZADA ### ---
 
     # --- 8.3. Actualizar la pantalla ---
     pygame.display.flip()

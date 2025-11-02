@@ -1,6 +1,7 @@
 # Ignorar directorios de IDE (PyCharm, VSCode, etc.)
 .idea/
 .vscode/
+build/
 
 # Ignorar directorios de caché de Python
 __pycache__/
@@ -15,6 +16,8 @@ env/
 .env
 
 # --- Tus Peticiones ---
+*.bat
+*.spec
 
 # Ignorar archivos de fuentes (tipografia)
 *.ttf
